@@ -24,6 +24,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "key_storage.h"
+
 #include "mbedtls/entropy.h"
 #include "mbedtls/ctr_drbg.h"
 #include "mbedtls/pk.h"
@@ -153,14 +155,16 @@ int main(void)
   }
 
   printf("Generating key, this might take a while...\r\n");
-  ret = mbedtls_rsa_gen_key(mbedtls_pk_rsa(key), mbedtls_ctr_drbg_random, &ctr_drbg, RSA_KEY_SIZE, RSA_EXPONENT);
-  if (ret != 0)
+  if (keystore_load(&key, &ctr_drbg) == 0)
   {
-      printf("rsa_gen_key failed: 0x%04x\r\n", -ret);
+      printf("Loaded key from flash\r\n");
   }
   else
   {
-      printf("RSA key generated successfully\r\n");
+      mbedtls_pk_free(&key); mbedtls_pk_init(&key);
+      mbedtls_pk_setup(&key, mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
+      mbedtls_rsa_gen_key(mbedtls_pk_rsa(key), mbedtls_ctr_drbg_random, &ctr_drbg, 2048, 65537);
+      printf("Generated key, saving: %s\r\n", keystore_save(&key) == 0 ? "ok" : "FAILED");
   }
   /* USER CODE END 2 */
 

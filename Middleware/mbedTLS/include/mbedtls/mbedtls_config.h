@@ -49,7 +49,9 @@
  *
  * Comment to disable the use of assembly code.
  */
+#if (__OPTIMIZE__)
 #define MBEDTLS_HAVE_ASM
+#endif
 
 /**
  * \def MBEDTLS_NO_UDBL_DIVISION
